@@ -1,10 +1,14 @@
 {
   "name": "gulp-tsmetrics",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Gulp wrapper around tsmetrics-core",
   "scripts": {
     "build": "tsc",
     "test": "mocha test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/kisstkondoros/gulp-tsmetrics.git"
   },
   "keywords": [
     "gulpplugin",
@@ -15,9 +19,10 @@
   "author": "Tamas Kiss",
   "license": "MIT",
   "dependencies": {
-    "typescript": "^1.8.10",
+    "fs": "0.0.2",
     "gulp-util": "^3.0.7",
-    "fs": "0.0.2"
+    "tsmetrics-core": "^0.1.0",
+    "typescript": "^1.8.10"
   },
   "devDependencies": {
     "assert": "^1.4.1",
