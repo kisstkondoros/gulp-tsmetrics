@@ -1,0 +1,27 @@
+{
+  "name": "gulp-tsmetrics",
+  "version": "0.0.1",
+  "description": "Gulp wrapper around tsmetrics-core",
+  "scripts": {
+    "build": "tsc",
+    "test": "mocha test.js"
+  },
+  "keywords": [
+    "gulpplugin",
+    "javascript",
+    "typescript",
+    "metrics"
+  ],
+  "author": "Tamas Kiss",
+  "license": "MIT",
+  "dependencies": {
+    "typescript": "^1.8.10",
+    "gulp-util": "^3.0.7",
+    "fs": "0.0.2"
+  },
+  "devDependencies": {
+    "assert": "^1.4.1",
+    "mocha": "^3.0.0",
+    "vinyl": "^0.5.3"
+  }
+}
