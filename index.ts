@@ -55,7 +55,7 @@ export function create(target: ts.ScriptTarget, silent?: boolean, metricsConfigu
         var joinedFile = new gutil.File({
             cwd: file.cwd,
             base: file.base,
-            path: file.filePath + '.json',
+            path: filePath + '.json',
             contents: new Buffer(JSON.stringify(metricsForFile))
         });
         callback(null, joinedFile);

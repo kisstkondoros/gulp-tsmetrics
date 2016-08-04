@@ -52,7 +52,7 @@ function create(target, silent, metricsConfiguration) {
         var joinedFile = new gutil.File({
             cwd: file.cwd,
             base: file.base,
-            path: file.filePath + '.json',
+            path: filePath + '.json',
             contents: new Buffer(JSON.stringify(metricsForFile))
         });
         callback(null, joinedFile);
