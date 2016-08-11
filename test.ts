@@ -71,7 +71,29 @@ describe('gulp-tsmetrics', function () {
         myMetrics.write(sampleFile);
         myMetrics.once('data', function (result) {
             var parseResult = JSON.parse(result.contents.toString());
-            assert.ok((<IMetricsModel>parseResult.metrics).children[1].children[5].children[5].complexity == 10);
+            assert.ok((<IMetricsModel>parseResult.metrics).children[0].children[0].children[0].complexity == 10);
+            done();
+        });
+    });
+    it('should only show method metrics if configured like that', function (done) {
+        var sampleFile = new gutil.File({
+            path: path.join(__dirname, 'fixture/fixture.ts'),
+            contents: new Buffer(0)
+        });
+
+        var myMetrics = Metrics.create(1 /* ES5 */, false, {
+            MetricsForArrowFunctionsToggled: false,
+            MetricsForClassDeclarationsToggled: false,
+            MetricsForConstructorDescriptionsToggled: false,
+            MetricsForEnumDeclarationDescriptionsToggled: false,
+            MetricsForFunctionDeclarationsToggled: false,
+            MetricsForFunctionExpressionsToggled: false,
+            MetricsForMethodDeclarationsToggled: true /* only for methods*/
+        });
+        myMetrics.write(sampleFile);
+        myMetrics.once('data', function (result) {
+            var parseResult = JSON.parse(result.contents.toString());
+            assert.ok((<IMetricsModel>parseResult.metrics).children[0].complexity == 1);
             done();
         });
     });

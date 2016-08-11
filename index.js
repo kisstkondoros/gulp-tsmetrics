@@ -13,27 +13,33 @@ function mergeConfiguration(source, target) {
     }
     return target;
 }
-function logRecursive(model, metricsConfiguration, level) {
-    var complexity = model.getSumComplexity();
-    if (model.visible) {
-        var color = chalk.white;
-        if (complexity > metricsConfiguration.ComplexityLevelExtreme) {
-            color = chalk.red;
+function collect(model, metricsConfiguration, silent, level, filteredOutput) {
+    if (model) {
+        var complexity = model.getSumComplexity();
+        if (!silent && model.visible && complexity >= metricsConfiguration.CodeLensHiddenUnder) {
+            var color = chalk.white;
+            if (complexity > metricsConfiguration.ComplexityLevelExtreme) {
+                color = chalk.red;
+            }
+            else if (complexity > metricsConfiguration.ComplexityLevelHigh) {
+                color = chalk.yellow;
+            }
+            else if (complexity > metricsConfiguration.ComplexityLevelNormal) {
+                color = chalk.green;
+            }
+            else if (complexity > metricsConfiguration.ComplexityLevelLow) {
+                color = chalk.white;
+            }
+            gutil.log(color(model.toLogString(level)));
         }
-        else if (complexity > metricsConfiguration.ComplexityLevelHigh) {
-            color = chalk.yellow;
+        if (model.children.length > 0 || complexity >= metricsConfiguration.CodeLensHiddenUnder) {
+            var copyOfModel_1 = model.clone();
+            filteredOutput.children.push(copyOfModel_1);
+            model.children.forEach(function (element) {
+                collect(element, metricsConfiguration, silent, level + "  ", copyOfModel_1);
+            });
         }
-        else if (complexity > metricsConfiguration.ComplexityLevelNormal) {
-            color = chalk.green;
-        }
-        else if (complexity > metricsConfiguration.ComplexityLevelLow) {
-            color = chalk.white;
-        }
-        gutil.log(color(model.toLogString(level)));
     }
-    model.children.forEach(function (element) {
-        logRecursive(element, metricsConfiguration, level + "  ");
-    });
 }
 function create(target, silent, metricsConfiguration) {
     metricsConfiguration = mergeConfiguration(metricsConfiguration || {}, new MetricsConfiguration_1.MetricsConfiguration());
@@ -47,13 +53,15 @@ function create(target, silent, metricsConfiguration) {
         var metricsForFile = MetricsParser_1.MetricsParser.getMetrics(filePath, metricsConfiguration, target);
         if (!silent) {
             gutil.log(metricsForFile.file);
-            logRecursive(metricsForFile.metrics, metricsConfiguration, "");
         }
+        var filteredMetrics = metricsForFile.metrics.clone();
+        collect(metricsForFile.metrics, metricsConfiguration, silent, "", filteredMetrics);
+        var result = filteredMetrics.children[0];
         var joinedFile = new gutil.File({
             cwd: file.cwd,
             base: file.base,
             path: filePath + '.json',
-            contents: new Buffer(JSON.stringify(metricsForFile))
+            contents: new Buffer(JSON.stringify({ file: filePath, metrics: result }))
         });
         callback(null, joinedFile);
     };

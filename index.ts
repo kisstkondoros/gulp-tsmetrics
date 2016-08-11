@@ -16,24 +16,31 @@ function mergeConfiguration(source: IMetricsConfiguration, target: IMetricsConfi
     return target;
 }
 
-function logRecursive(model: IMetricsModel, metricsConfiguration: IMetricsConfiguration, level: string) {
-    const complexity = model.getSumComplexity();
-    if (model.visible) {
-        let color = chalk.white;
-        if (complexity > metricsConfiguration.ComplexityLevelExtreme) {
-            color = chalk.red;
-        } else if (complexity > metricsConfiguration.ComplexityLevelHigh) {
-            color = chalk.yellow;
-        } else if (complexity > metricsConfiguration.ComplexityLevelNormal) {
-            color = chalk.green;
-        } else if (complexity > metricsConfiguration.ComplexityLevelLow) {
-            color = chalk.white;
+function collect(model: IMetricsModel, metricsConfiguration: IMetricsConfiguration, silent: boolean, level: string, filteredOutput: IMetricsModel) {
+    if (model) {
+        const complexity = model.getSumComplexity();
+        if (!silent && model.visible && complexity >= metricsConfiguration.CodeLensHiddenUnder) {
+            let color = chalk.white;
+            if (complexity > metricsConfiguration.ComplexityLevelExtreme) {
+                color = chalk.red;
+            } else if (complexity > metricsConfiguration.ComplexityLevelHigh) {
+                color = chalk.yellow;
+            } else if (complexity > metricsConfiguration.ComplexityLevelNormal) {
+                color = chalk.green;
+            } else if (complexity > metricsConfiguration.ComplexityLevelLow) {
+                color = chalk.white;
+            }
+            gutil.log(color(model.toLogString(level)));
         }
-        gutil.log(color(model.toLogString(level)));
+
+        if (model.children.length > 0 || complexity >= metricsConfiguration.CodeLensHiddenUnder) {
+            const copyOfModel = model.clone();
+            filteredOutput.children.push(copyOfModel);
+            model.children.forEach(element => {
+                collect(element, metricsConfiguration, silent, level + "  ", copyOfModel);
+            });
+        }
     }
-    model.children.forEach(element => {
-        logRecursive(element, metricsConfiguration, level + "  ");
-    });
 }
 
 export function create(target: ts.ScriptTarget, silent?: boolean, metricsConfiguration?: IMetricsConfiguration) {
@@ -49,14 +56,15 @@ export function create(target: ts.ScriptTarget, silent?: boolean, metricsConfigu
         var metricsForFile = MetricsParser.getMetrics(filePath, metricsConfiguration, target);
         if (!silent) {
             gutil.log(metricsForFile.file);
-            logRecursive(metricsForFile.metrics, metricsConfiguration, "");
         }
-
+        var filteredMetrics = metricsForFile.metrics.clone();
+        collect(metricsForFile.metrics, metricsConfiguration, silent, "", filteredMetrics);
+        var result = filteredMetrics.children[0];
         var joinedFile = new gutil.File({
             cwd: file.cwd,
             base: file.base,
             path: filePath + '.json',
-            contents: new Buffer(JSON.stringify(metricsForFile))
+            contents: new Buffer(JSON.stringify({ file: filePath, metrics: result }))
         });
         callback(null, joinedFile);
     };

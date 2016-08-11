@@ -21,7 +21,7 @@
   "dependencies": {
     "fs": "0.0.2",
     "gulp-util": "^3.0.7",
-    "tsmetrics-core": "^0.1.0",
+    "tsmetrics-core": "^0.2.0",
     "typescript": "^1.8.10"
   },
   "devDependencies": {
